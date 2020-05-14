@@ -45,7 +45,7 @@ namespace CityInfo.API.Controllers
         public IActionResult CreatePointOfInterest(int cityId, 
             [FromBody] PointsOfInterestForCreationDTO pointsOfInterestForCreationDTO)
         {
-            validateModel(pointsOfInterestForCreationDTO);
+            validateModelForCreation(pointsOfInterestForCreationDTO);
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -71,9 +71,32 @@ namespace CityInfo.API.Controllers
                 finalPointOfInterest);
         }
 
-        private void validateModel(PointsOfInterestForCreationDTO pointsOfInterestForCreationDTO)
+        [HttpPut("{id}")]
+        public IActionResult UpdatePointOfInterest(int cityId, int id, 
+            [FromBody] PointsOfInterestForUpdateDTO pointsOfInterestForUpdateDTO)
         {
-            if (String.IsNullOrEmpty(pointsOfInterestForCreationDTO.Name))
+            validateModelForUpdate(pointsOfInterestForUpdateDTO);
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var city = CitiesDataStore.Current.Cities.FirstOrDefault(c => c.Id == cityId);
+            if (city == null)
+                return NotFound("City not Found");
+
+            var poi = city.PointsOfInterest.FirstOrDefault(p => p.Id == id);
+            if(poi == null)
+                return NotFound("Point of Interest not Found");
+
+            poi.Name = pointsOfInterestForUpdateDTO.Name;
+            poi.Description = pointsOfInterestForUpdateDTO.Description;
+
+            return NoContent();
+        }
+
+        private void validateModelForCreation(PointsOfInterestForCreationDTO pointOfInterest)
+        {
+            if (String.IsNullOrEmpty(pointOfInterest.Name))
             {
                 ModelState.AddModelError(
                     "Nome",
@@ -82,7 +105,7 @@ namespace CityInfo.API.Controllers
                 return;
             }
 
-            if (String.IsNullOrEmpty(pointsOfInterestForCreationDTO.Description))
+            if (String.IsNullOrEmpty(pointOfInterest.Description))
             {
                 ModelState.AddModelError(
                     "Descrição",
@@ -91,14 +114,49 @@ namespace CityInfo.API.Controllers
                 return;
             }
 
-            if (pointsOfInterestForCreationDTO.Name.Length > 50)
+            if (pointOfInterest.Name.Length > 50)
             {
                 ModelState.AddModelError(
                     "Tamanho do campo nome",
                     "O campo nome não pode ser maior que 50 caracteres");
             }
 
-            if (pointsOfInterestForCreationDTO.Description.Length > 255)
+            if (pointOfInterest.Description.Length > 255)
+            {
+                ModelState.AddModelError(
+                    "Tamanho do campo descrição",
+                    "O campo descrição não pode ser maior que 255 caracteres");
+            }
+        }
+
+        private void validateModelForUpdate(PointsOfInterestForUpdateDTO pointOfInterest)
+        {
+            if (String.IsNullOrEmpty(pointOfInterest.Name))
+            {
+                ModelState.AddModelError(
+                    "Nome",
+                    "Nome inválido");
+
+                return;
+            }
+
+            if (String.IsNullOrEmpty(pointOfInterest.Description))
+            {
+                ModelState.AddModelError(
+                    "Descrição",
+                    "Descrição inválida");
+
+                return;
+            }
+
+            if (pointOfInterest.Name.Length > 50)
+            {
+                ModelState.AddModelError(
+                    "Tamanho do campo nome",
+                    "O campo nome não pode ser maior que 50 caracteres");
+            }
+
+            if (pointOfInterest.Description.Length > 255)
             {
                 ModelState.AddModelError(
                     "Tamanho do campo descrição",
