@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CityInfo.API.Models;
+using CityInfo.API.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Logging;
+using NLog;
 
 namespace CityInfo.API.Controllers
 {
@@ -14,15 +17,33 @@ namespace CityInfo.API.Controllers
     [ApiController]
     public class PointsOfInterestController : ControllerBase
     {
+        private ILogger<PointsOfInterestController> _logger { get; set; }
+        private IMailService _mailLocalService { get; set; }
+
+        public PointsOfInterestController(ILogger<PointsOfInterestController> logger,
+            IMailService mailLocalService)
+        {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _mailLocalService = mailLocalService ?? throw new ArgumentNullException(nameof(mailLocalService));
+        }
+
         [HttpGet]
         public IActionResult GetPointsOfInterest(int cityId)
         {
-            var city = CitiesDataStore.Current.Cities.FirstOrDefault(c => c.Id == cityId);
+            try
+            {
+                var city = CitiesDataStore.Current.Cities.FirstOrDefault(c => c.Id == cityId);
 
-            if (city == null)
-                return NotFound();
+                if (city == null)
+                    return NotFound();
 
-            return Ok(city.PointsOfInterest);
+                return Ok(city.PointsOfInterest);
+            }
+            catch (Exception)
+            {
+                _logger.LogInformation("Testando o NLOG");
+                return StatusCode(500, "Testando o NLOG");
+            }
         }
 
 
@@ -138,6 +159,9 @@ namespace CityInfo.API.Controllers
                 return NotFound("Point of Interest not Found");
 
             city.PointsOfInterest.Remove(poi);
+
+            _mailLocalService.Send("POI deletado",
+                $"O POI de nome {poi.Name} e id {poi.Id} foi excluído");
 
             return NoContent();
         }
