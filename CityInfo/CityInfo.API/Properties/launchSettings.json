@@ -12,7 +12,8 @@
       "commandName": "IISExpress",
       "launchBrowser": true,
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "connectionStrings:cityInfoDBConnectionString": "Server = localhost; Database = CityInfo; User Id = admin; Password = 1020304050;"
       }
     },
     "CityInfo.API": {
