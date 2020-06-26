@@ -61,6 +61,14 @@ namespace CityInfo.API.Services
             return _context.PointsOfInterest.Where(c => c.CityId == cityId).ToList();
         }
 
+        public void UpdatePointOfInterestForCity(int cityId, PointOfInterest pointOfInterest)
+        {
+            
+        }
 
+        public void DeletePointOfInterestForCity(PointOfInterest pointOfInterest)
+        {
+            _context.PointsOfInterest.Remove(pointOfInterest);
+        }
     }
 }
